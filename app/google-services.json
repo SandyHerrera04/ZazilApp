@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "696378784639",
+    "project_id": "pruebausuario-6e3b7",
+    "storage_bucket": "pruebausuario-6e3b7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:696378784639:android:dd2a548acbc31a1e69b84a",
+        "android_client_info": {
+          "package_name": "tec.lass.zazil_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxEIDDPFQCHhm3kPNhLbQh54kYISWV-_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
