@@ -99,11 +99,17 @@ class UserRepository {
                                 if (dbTask.isSuccessful) {
                                     onSuccess()
                                 } else {
-                                    onFailure(dbTask.exception?.message ?: "Error al crear cuenta en la base de datos")
+                                    onFailure(
+                                        dbTask.exception?.message
+                                            ?: "Error al crear cuenta en la base de datos"
+                                    )
                                 }
                             }
                         } else {
-                            onFailure(task.exception?.message ?: "Error al registrar usuario en Firebase Auth")
+                            onFailure(
+                                task.exception?.message
+                                    ?: "Error al registrar usuario en Firebase Auth"
+                            )
                         }
                     }
             }
@@ -124,30 +130,44 @@ class UserRepository {
      * @param onSuccess Callback que se ejecuta si el inicio de sesión es exitoso.
      * @param onFailure Callback que se ejecuta si ocurre un error, pasando el mensaje de error.
      */
-        fun loginUser(
-            phone: String,
-            password: String,
-            onSuccess: () -> Unit,
-            onFailure: (String) -> Unit
-        ) {
-            val userRef = database.child(phone)
+    fun loginUser(
+        phone: String,
+        password: String,
+        onSuccess: (User) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val userRef = database.child(phone)
 
-            userRef.get().addOnSuccessListener { dataSnapshot ->
-                if (dataSnapshot.exists()) {
-                    val storedHashedPassword = dataSnapshot.child("password").value as String
+        database.child(phone).get().addOnSuccessListener { dataSnapshot ->
+            if (dataSnapshot.exists()) {
+                val user = dataSnapshot.getValue(User::class.java)
 
-                    // Comprobar si la contraseña es correcta
-                    if (BCrypt.checkpw(password, storedHashedPassword)) {
-                        onSuccess()
+                userRef.get().addOnSuccessListener { dataSnapshot ->
+                    if (dataSnapshot.exists()) {
+                        val storedHashedPassword = dataSnapshot.child("password").value as String
+
+                        // Comprobar si la contraseña es correcta
+                        if (BCrypt.checkpw(password, storedHashedPassword)) {
+                            val user = User(
+                                name = dataSnapshot.child("name").value as String,
+                                email = dataSnapshot.child("email").value as String,
+                                phone = dataSnapshot.child("phone").value as String,
+                                location = dataSnapshot.child("location").value as String,
+                                birthdate = dataSnapshot.child("birthdate").value as String,
+                                curp = dataSnapshot.child("curp").value as String
+                            )
+                            onSuccess(user)
+                        } else {
+                            onFailure("Contraseña incorrecta")
+                        }
                     } else {
-                        onFailure("Contraseña incorrecta")
+                        onFailure("El usuario no existe")
                     }
-                } else {
-                    onFailure("El usuario no existe")
+                }.addOnFailureListener { exception ->
+                    onFailure(exception.message ?: "Error al verificar usuario")
                 }
-            }.addOnFailureListener { exception ->
-                onFailure(exception.message ?: "Error al verificar usuario")
             }
         }
     }
+}
 
