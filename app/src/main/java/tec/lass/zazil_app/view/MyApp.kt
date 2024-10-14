@@ -60,11 +60,11 @@ import tec.lass.zazil_app.viewmodel.UserProfileViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MyApp(navController: NavHostController) {
+fun MyApp(navController: NavHostController, sessionViewModel: SessionViewModel) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val backStackEntry = navController.currentBackStackEntryAsState().value
-    val currentRoute = backStackEntry?.destination?.route // Obtener la ruta actual
+    val currentRoute = backStackEntry?.destination?.route
 
     val productosState = remember { mutableStateListOf(*productos.toTypedArray()) }
 
@@ -77,7 +77,7 @@ fun MyApp(navController: NavHostController) {
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    NavigationComponent(navController = navController, productosState = productosState)
+                    NavigationComponent(navController = navController, productosState = productosState, sessionViewModel = sessionViewModel)
                 }
             }
         )
@@ -85,13 +85,18 @@ fun MyApp(navController: NavHostController) {
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                // Contenido del menú lateral
                 ModalDrawerSheet {
                     DrawerHeader(
+                        sessionViewModel = sessionViewModel, // Pasamos el SessionViewModel
+                        navController = navController,
                         currentRoute = currentRoute,
                         onHeaderClick = {
-                            if (currentRoute != "perfil"){
-                                navController.navigate("perfil")
+                            val phone = sessionViewModel.phoneNumber.value
+                            if (currentRoute != "perfil" && phone != null) {
+                                navController.navigate("perfil/$phone") {
+                                    popUpTo(navController.graph.startDestinationId)
+                                    launchSingleTop = true
+                                }
                             }
                         },
                         onCloseDrawer = {
@@ -118,13 +123,13 @@ fun MyApp(navController: NavHostController) {
                                         "inicio" -> "INICIO"
                                         "tienda" -> "TIENDA"
                                         "productos/{categoriaSeleccionada}/{textoBusqueda}" -> "TIENDA"
-                                        "calendario"-> "CALENDARIO"
+                                        "calendario" -> "CALENDARIO"
                                         "hablemos" -> "HABLEMOS DE..."
                                         "perfil" -> "PERFIL"
                                         "carrito" -> "CARRITO"
-                                        "conocenos"-> "CONÓCENOS"
-                                        "aviso_priv"-> "AVISO DE PRIVACIDAD"
-                                        "terminos_con"-> "TÉRMINOS Y CONDICIONES"
+                                        "conocenos" -> "CONÓCENOS"
+                                        "aviso_priv" -> "AVISO DE PRIVACIDAD"
+                                        "terminos_con" -> "TÉRMINOS Y CONDICIONES"
                                         "favoritos" -> "FAVORITOS"
                                         "creditos" -> "CRÉDITOS"
                                         "tema/{titulo}/{descripcion}/{imagen}/{infoCompleta}" -> "HABLEMOS DE..."
@@ -156,7 +161,7 @@ fun MyApp(navController: NavHostController) {
                                 .fillMaxSize()
                                 .padding(padding)
                         ) {
-                            NavigationComponent(navController = navController, productosState = productosState)
+                            NavigationComponent(navController = navController, productosState = productosState, sessionViewModel = sessionViewModel)
                         }
                     }
                 )
@@ -165,7 +170,6 @@ fun MyApp(navController: NavHostController) {
     }
 }
 
-
 /**
  * Composable NavigationComponent
  *
@@ -173,15 +177,19 @@ fun MyApp(navController: NavHostController) {
  *
  * @param navController Controlador de navegación utilizado para cambiar de pantalla.
  * @param productosState Lista mutable que contiene los productos de la tienda.
+ * @param sessionViewModel ViewModel que maneja el número de teléfono de la sesión.
  */
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NavigationComponent(navController: NavHostController, productosState: MutableList<Producto>) {
+fun NavigationComponent(navController: NavHostController, productosState: MutableList<Producto>, sessionViewModel: SessionViewModel) {
     NavHost(navController = navController, startDestination = "login") {
 
         composable("login") {
-            LoginScreen(navController = navController, viewModel = LoginViewModel(), sessionViewModel = SessionViewModel())
+            LoginScreen(
+                navController = navController,
+                viewModel = LoginViewModel(),
+                sessionViewModel = sessionViewModel // Pasamos el SessionViewModel a la pantalla de login
+            )
         }
         composable("signup") {
             SignUpScreen(
@@ -197,19 +205,17 @@ fun NavigationComponent(navController: NavHostController, productosState: Mutabl
             )
         }
         composable("inicio") {
-            PantallaInicio(navController = navController)
-            //Column(
-            // modifier = Modifier .fillMaxSize() .padding(16.dp)) {
-            //Text("Este es el contenido principal de la app")
-
+            // Pasamos el SessionViewModel a la pantalla de inicio para acceder al teléfono
+            PantallaInicio(navController = navController, SessionViewModel = SessionViewModel())
         }
 
         composable("tienda") {
             PantallaTienda(
                 navController = navController,
                 productosState = productosState
-            ) // Pantalla de la tienda
+            )
         }
+
         composable("productos/{categoriaSeleccionada}/{textoBusqueda}") { backStackEntry ->
             val categoriaSeleccionada = backStackEntry.arguments?.getString("categoriaSeleccionada")
             val textoBusqueda = backStackEntry.arguments?.getString("textoBusqueda") ?: ""
@@ -218,61 +224,74 @@ fun NavigationComponent(navController: NavHostController, productosState: Mutabl
                 textoBusqueda = textoBusqueda,
                 navController = navController,
                 productosState = productosState
-            ) // Pantalla de productos filtrados
+            )
         }
+
         composable(route = "perfil/{phone}") { backStackEntry ->
             val phone = backStackEntry.arguments?.getString("phone") ?: ""
-            PantallaPerfil(navController, phone)
+            PantallaPerfil(viewModel = UserProfileViewModel(), phone = phone)
+        }
 
-            composable("calendario") {
-                PantallaCalendario() // Pantalla del calendario
-            }
-            composable("hablemos") {
-                PantallaHablemosDe(navController = navController) // Pantalla de hablemos de
-            }
-            composable("conocenos") {
-                PantallaConocenos() // Pantalla del carrito
-            }
-            composable("aviso_priv") {
-                PantallaAvisoPriv() // Pantalla del carrito
-            }
-            composable("creditos") {
-                PantallaCreditos(integrantes = integrantes)
-            }
-            composable("favoritos") {
-                PantallaFavoritos(productosState.filter { it.favorito })
-            }
-            composable(
-                "tema/{titulo}/{descripcion}/{imagen}/{infoCompleta}",
-                arguments = listOf(
-                    navArgument("titulo") { type = NavType.StringType },
-                    navArgument("descripcion") { type = NavType.StringType },
-                    navArgument("imagen") { type = NavType.IntType },
-                    navArgument("infoCompleta") { type = NavType.StringType }
-                )
-            ) { backStackEntry ->
-                // Obtener los parámetros de la navegación
-                val titulo = backStackEntry.arguments?.getString("titulo") ?: "Sin título"
-                val descripcion =
-                    backStackEntry.arguments?.getString("descripcion") ?: "Sin descripción"
-                val imagen = backStackEntry.arguments?.getInt("imagen") ?: 0
-                val infoCompleta = backStackEntry.arguments?.getString("infoCompleta")
-                    ?: "Sin información completa"
+        composable("calendario") {
+            PantallaCalendario()
+        }
 
-                // Llamada a PantallaTema con los parámetros
-                PantallaTema(
-                    titulo = titulo,
-                    descripcion = descripcion,
-                    imagen = imagen,
-                    infoCompleta = infoCompleta,
-                    navController = navController
-                )
-            }
-            composable("donaciones") {
-                PantallaDonaciones() // Pantalla del carrito
-            }
+        composable("hablemos") {
+            PantallaHablemosDe(navController = navController)
+        }
+
+        composable("conocenos") {
+            PantallaConocenos()
+        }
+
+        composable("aviso_priv") {
+            PantallaAvisoPriv()
+        }
+
+        composable("creditos") {
+            PantallaCreditos(integrantes = integrantes)
+        }
+
+        composable("favoritos") {
+            PantallaFavoritos(productosState.filter { it.favorito })
+        }
+
+        composable(
+            "tema/{titulo}/{descripcion}/{imagen}/{infoCompleta}",
+            arguments = listOf(
+                navArgument("titulo") { type = NavType.StringType },
+                navArgument("descripcion") { type = NavType.StringType },
+                navArgument("imagen") { type = NavType.IntType },
+                navArgument("infoCompleta") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val titulo = backStackEntry.arguments?.getString("titulo") ?: "Sin título"
+            val descripcion = backStackEntry.arguments?.getString("descripcion") ?: "Sin descripción"
+            val imagen = backStackEntry.arguments?.getInt("imagen") ?: 0
+            val infoCompleta = backStackEntry.arguments?.getString("infoCompleta") ?: "Sin información completa"
+            PantallaTema(
+                titulo = titulo,
+                descripcion = descripcion,
+                imagen = imagen,
+                infoCompleta = infoCompleta,
+                navController = navController
+            )
+        }
+
+        composable("donaciones") {
+            PantallaDonaciones()
+        }
+
+        composable("carrito") {
+            PantallaCarrito(
+                productosCarrito = productosState.filter { it.carrito },
+                onDeleteProducto = { productoEliminado ->
+                    val index = productosState.indexOf(productoEliminado)
+                    if (index != -1) {
+                        productosState[index] = productosState[index].copy(carrito = false)
+                    }
+                }
+            )
         }
     }
 }
-
-

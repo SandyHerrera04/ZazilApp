@@ -17,11 +17,13 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 import mx.sphr.zazil.viewmodel.SignUpState
 import mx.sphr.zazil.viewmodel.SignUpViewModel
 import tec.lass.zazil_app.R
@@ -43,9 +46,12 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
+    fun isValidCurp(curp: String): Boolean {
+        val curpPattern = "^[A-Z]{4}\\d{6}[HM][A-Z]{2}[A-Z]{3}[A-Z\\d]{1}\\d{1}$"
+        return curp.matches(Regex(curpPattern))
+    }
 
     val signUpState by viewModel.signUpState.collectAsState()
-
 
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -56,8 +62,10 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     var curp by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
-
     var showCurpHelp by remember { mutableStateOf(false) }
+
+    var acceptPrivacyPolicy by remember { mutableStateOf(false) } // Estado del checkbox
+    var registrationSuccess by remember { mutableStateOf(false) } // Estado de registro exitoso
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
@@ -86,8 +94,11 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
             errorMessage = (signUpState as SignUpState.Error).message
         }
         is SignUpState.Success -> {
-            // Navegar a la pantalla de inicio si el registro es exitoso
-            navController.navigate("inicio")
+            LaunchedEffect(Unit) {
+                registrationSuccess = true
+                delay(5000)
+                navController.navigate("login")
+            }
         }
         is SignUpState.Loading -> {
             // Mostrar un indicador de carga si está en progreso
@@ -224,6 +235,7 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
                 }
             }
         }
+
         item {
             // Campo CURP con icono y toque para mostrar ayuda
             OutlinedTextField(
@@ -252,14 +264,31 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
         }
 
         item {
-            // Botón de registro
+            // Casilla de verificación para aceptar la política de privacidad
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = acceptPrivacyPolicy,
+                    onCheckedChange = { acceptPrivacyPolicy = it }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Acepto el aviso de privacidad",
+                    modifier = Modifier.clickable { acceptPrivacyPolicy = !acceptPrivacyPolicy },
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        item {
+            // Botón de registro desactivado si no acepta la política de privacidad
             Button(
                 onClick = {
                     if (name.isNotEmpty() && phone.isNotEmpty() && password.isNotEmpty() && email.isNotEmpty() &&
                         birthdate.isNotEmpty() && location.isNotEmpty() && curp.isNotEmpty()) {
-                        viewModel.registerUser(name, phone, password, email, birthdate, location, curp)
                         if (!isValidEmail(email.trim())) {
                             errorMessage = "Por favor ingresa un correo electrónico válido."
+                        } else if (!isValidCurp(curp.trim())) {
+                            errorMessage = "El CURP ingresado no es válido."
                         } else {
                             viewModel.registerUser(
                                 email.trim(), password, phone, name, birthdate, curp, location
@@ -269,6 +298,7 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
                         errorMessage = "Por favor completa todos los campos"
                     }
                 },
+                enabled = acceptPrivacyPolicy,  // Habilitar o deshabilitar según la casilla
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Crear cuenta")
@@ -286,9 +316,20 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
             }
         }
 
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
+        // Mostrar el mensaje de éxito de registro
+        if (registrationSuccess) {
+            item {
+                Text(
+                    text = "Registro exitoso. Bienvenido a ZAZIL.",
+                    color = Color(0xFF388E3C),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+        }
 
+        item {
+            // Botón para ir a iniciar sesión si ya tiene cuenta
             TextButton(onClick = { navController.navigate("login") }) {
                 Text("¿Ya tienes cuenta? Inicia sesión")
             }

@@ -1,6 +1,7 @@
 
 package tec.lass.zazil_app.view
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -48,8 +49,9 @@ fun LoginScreen(viewModel: LoginViewModel, sessionViewModel: SessionViewModel, n
             errorMessage = (loginState as LoginState.Error).message
         }
         is LoginState.Success -> {
-            sessionViewModel.setPhoneNumber(phone)  // Actualizar el número de teléfono en SessionViewModel
-            navController.navigate("perfil/$phone")  // Navegar a la pantalla de perfil
+            sessionViewModel.setPhoneNumber(phone)
+            Log.d("LoginScreen", "Navegando a inicio con el teléfono: $phone")
+            navController.navigate("inicio")
         }
         is LoginState.Loading -> {
             errorMessage = ""
@@ -137,7 +139,7 @@ fun LoginScreen(viewModel: LoginViewModel, sessionViewModel: SessionViewModel, n
         Button(
             onClick = {
                 if (phone.isNotEmpty() && password.isNotEmpty()) {
-                    viewModel.login(phone, password)  // Llamar a la función de inicio de sesión
+                    viewModel.login(phone, password, sessionViewModel)  // Llamar a la función de inicio de sesión
                 } else {
                     errorMessage = "Por favor completa todos los campos"
                 }

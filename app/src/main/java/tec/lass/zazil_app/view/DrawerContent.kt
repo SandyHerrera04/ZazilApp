@@ -1,16 +1,10 @@
 package tec.lass.zazil_app.view
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 import tec.lass.zazil_app.R
@@ -18,14 +12,9 @@ import tec.lass.zazil_app.R
 fun DrawerContent(navController: NavController, onCloseDrawer: () -> Unit) {
     Column(modifier = Modifier.padding(6.dp)) {
         MenuOption(iconResId = R.drawable.ic_inicio, label = "Inicio") {
-            // Acción al hacer clic en "Inicio"
             navController.navigate("inicio")
             onCloseDrawer()
         }
-        //Spacer(modifier = Modifier.height(6.dp))
-        //MenuOption(iconResId = R.drawable.ic_usuario, label = "Perfil") {
-            // Acción al hacer clic en "Perfil"
-        //}
         Spacer(modifier = Modifier.height(6.dp))
         MenuOption(iconResId = R.drawable.ic_tienda, label = "Tienda") {
             navController.navigate("tienda")
@@ -43,7 +32,8 @@ fun DrawerContent(navController: NavController, onCloseDrawer: () -> Unit) {
         }
         Spacer(modifier = Modifier.height(6.dp))
         MenuOption(iconResId = R.drawable.ic_carrito, label = "Carrito") {
-            //navController.navigate("carrito")
+            navController.navigate("carrito")
+            onCloseDrawer()
         }
         Spacer(modifier = Modifier.height(6.dp))
         MenuOption(iconResId = R.drawable.ic_favoritos, label = "Favoritos") {

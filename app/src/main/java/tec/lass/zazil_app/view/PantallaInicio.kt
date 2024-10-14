@@ -1,7 +1,6 @@
 package tec.lass.zazil_app.view
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -10,9 +9,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -20,11 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import tec.lass.zazil_app.R
-import tec.lass.zazil_app.viewmodel.MainViewModel
+import tec.lass.zazil_app.viewmodel.SessionViewModel
 
 
 @Composable
-fun PantallaInicio(navController: NavHostController) {
+fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionViewModel) {
+    val phone by SessionViewModel.phoneNumber.observeAsState("")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +38,7 @@ fun PantallaInicio(navController: NavHostController) {
     ) {
         // Título de la pantalla
         Text(
-            text = "¡Nos alegra tenerte aquí!",
+            text = "¡Nos alegra tenerte aquí!, $phone",
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold
         )
