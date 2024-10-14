@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import tec.lass.zazil_app.model.UserRepository
+import tec.lass.zazil_app.viewmodel.SessionViewModel
 
 sealed class LoginState {
     object Success : LoginState()
@@ -21,14 +22,16 @@ class LoginViewModel : ViewModel() {
     var phoneNumber: String? = null
         private set
 
-    fun login(phone: String, password: String) {
+    fun login(phone: String, password: String, sessionViewModel: SessionViewModel) {
         _loginState.value = LoginState.Loading
 
         viewModelScope.launch {
             userRepository.loginUser(phone, password,
-                onSuccess = {
-                    phoneNumber = phone
+                onSuccess = { user ->
+                    phoneNumber = user.phone
+                    val userName = user.name ?: "Usuario desconocido"  // Obtén el nombre del usuario
                     _loginState.value = LoginState.Success
+                    sessionViewModel.setUserName(userName)  // Almacena el nombre en el SessionViewModel
                 },
                 onFailure = { error ->
                     _loginState.value = LoginState.Error(error)

@@ -12,14 +12,13 @@ import tec.lass.zazil_app.model.User
      * Función para cargar los datos del usuario que inició sesión.
      */
 
-class UserProfileViewModel : ViewModel() {
+     class UserProfileViewModel : ViewModel(){
          private val _userData = MutableLiveData<User?>()
          private val database = FirebaseDatabase.getInstance().getReference("users")
 
          val userData: LiveData<User?> get() = _userData
 
          fun loadUserData(phone: String) {
-             // Aquí va tu lógica de carga desde Firebase
              database.child(phone).get().addOnSuccessListener { dataSnapshot ->
                  if (dataSnapshot.exists()) {
                      val user = dataSnapshot.getValue(User::class.java)
