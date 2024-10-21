@@ -1,6 +1,5 @@
 package tec.lass.zazil_app.view
 
-import ProductCard
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,34 +34,28 @@ import tec.lass.zazil_app.R
 import tec.lass.zazil_app.model.Integrante
 import tec.lass.zazil_app.model.Producto
 
+/**
+ * Composable que representa la pantalla de créditos.
+ * @param integrantes Lista de integrantes que se mostrarán en la pantalla de créditos.
+ */
 @Composable
 fun PantallaCreditos(integrantes: List<Integrante>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(13.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Integrantes", fontSize = 18.sp, color = Color.Black)
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Llama a la función que muestra las tarjetas de los integrantes
-        TeamColumn(integrantes = integrantes)
-    }
-}
-
-@Composable
-fun TeamColumn(integrantes: List<Integrante>) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        integrantes.forEach { integrante ->
-            IntegranteCard(integrante = integrante)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(integrantes) { integrante ->
+                IntegranteCard(integrante = integrante)
+            }
         }
     }
 }

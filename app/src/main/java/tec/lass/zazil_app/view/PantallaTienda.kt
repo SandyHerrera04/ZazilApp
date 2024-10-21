@@ -3,207 +3,120 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardDefaults.cardElevation
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
-import tec.lass.zazil_app.R
-import tec.lass.zazil_app.model.Producto
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import tec.lass.zazil_app.model.productos
-import tec.lass.zazil_app.view.PantallaProductos
-
-
+import coil3.compose.rememberAsyncImagePainter
+import tec.lass.zazil_app.R
+import tec.lass.zazil_app.model.Producto
+import tec.lass.zazil_app.viewmodel.ProductoVM
+import android.net.Uri
+/**
+ * Pantalla de la tienda
+ *@param navController controlador de navegación
+ * @param productoVM ViewModel para la tienda
+ */
 @Composable
-fun PantallaTienda(navController: NavHostController, productosState: MutableList<Producto>) {
+fun PantallaTienda(navController: NavHostController, productoVM: ProductoVM) {
+    // Llama a escucharCambiosEnProductos() al iniciar la pantalla
+    LaunchedEffect(Unit) {
+        productoVM.escucharCambiosEnProductos() // O llama a obtenerListaProductos()
+    }
+
+    val listaProductos by productoVM.listaProductos.observeAsState(emptyList())
+    val productosEnCarrito by productoVM.productosEnCarrito.observeAsState(emptySet())  // Set de identificadores
+    val productosFavoritos by productoVM.productosFavoritos.observeAsState(emptySet())  // Set de identificadores
+
     var textoBusqueda by remember { mutableStateOf("") }
     var categoriaSeleccionada by remember { mutableStateOf<String?>(null) }
 
-    //val productosState = remember { mutableStateListOf(*productos.toTypedArray()) }
+    // Filtrar productos según la búsqueda y la categoría seleccionada
+    val productosFiltrados = listaProductos.filter { producto ->
+        (textoBusqueda.isEmpty() || producto.product.contains(textoBusqueda, ignoreCase = true)) &&
+                (categoriaSeleccionada == null || producto.category == categoriaSeleccionada)
+    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .verticalScroll(rememberScrollState())  // Agrega el scroll vertical
-    ) {
+    // UI para mostrar la lista de productos
+    Scaffold {
+        Column(modifier = Modifier.fillMaxSize().padding(it)) {
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Mostrar barra de búsqueda solo si no hay categoría seleccionada
-        SearchBar(
-            texto = textoBusqueda,
-            onSearch = { nuevoTexto ->
+            // Barra de búsqueda
+            SearchBar(texto = textoBusqueda) { nuevoTexto ->
                 textoBusqueda = nuevoTexto
-                navController.navigate("productos/${categoriaSeleccionada ?: "null"}/$nuevoTexto")
+                categoriaSeleccionada = null  // Resetea la categoría al buscar
             }
-        )
-        Spacer(modifier = Modifier.height(15.dp))
 
-        // Categorías
-        CategoriesRow(
-            categoriaSeleccionada = categoriaSeleccionada,
-            onCategorySelected = { categoria ->
-                if (categoriaSeleccionada == categoria) {
-                    categoriaSeleccionada = null
-                    navController.popBackStack()  // Vuelve a la tienda sin filtros
-                } else {
-                    categoriaSeleccionada = categoria
-                    navController.navigate("productos/$categoria/$textoBusqueda")
-                }
-            }
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Sección de descuentos
-        Spacer(modifier = Modifier.height(20.dp))
-        SectionTitle(title = "Descuentos")
-        Spacer(modifier = Modifier.height(8.dp))
-        ProductRow(
-            productos = productos.filter { it.tieneDescuento },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
-                }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
-                // Acción cuando se hace clic en el icono de carrito
+            // Filtros de categorías
+            CategoriesRow(categoriaSeleccionada) { categoria ->
+                categoriaSeleccionada = if (categoriaSeleccionada == categoria) null else categoria
+                textoBusqueda = ""  // Resetea la búsqueda al seleccionar categoría
             }
-        )
 
-        // Sección de novedades
-        Spacer(modifier = Modifier.height(26.dp))
-        SectionTitle(title = "Novedades")
-        Spacer(modifier = Modifier.height(8.dp))
-        ProductRow(
-            productos = productos.filter { it.esNovedad },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
-                }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
-            }
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        ProductRow(
-            productos = productos.filter { it.tipo == "Nocturnas" },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
-                }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
-            }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            // Mostrar productos filtrados
+            if (productosFiltrados.isNotEmpty()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(8.dp),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(productosFiltrados) { producto ->
 
-        ProductRow(
-            productos = productos.filter { it.tipo == "Teens" },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
-                }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
-            }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+                        val esFavorito = productosFavoritos.contains(producto.product)  // Verifica si el ID está en favoritos
+                        val estaEnCarrito = productosEnCarrito.contains(producto.product)  // Verifica si el ID está en carrito
 
-        ProductRow(
-            productos = productos.filter { it.tipo == "Regulares" },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
+                        ProductoCard(
+                            producto = producto,
+                            esFavorito = esFavorito,
+                            estaEnCarrito = estaEnCarrito,
+                            onFavoriteClick = { productoVM.toggleFavorito(producto) },
+                            onCarritoClick = { productoVM.toggleCarrito(producto) },
+                            navController = navController
+                        )
+                    }
                 }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
+            } else {
+                Text(
+                    text = "No se encontraron productos",
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
             }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ProductRow(
-            productos = productos.filter { it.tipo == "Kits" },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
-                }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
-            }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ProductRow(
-            productos = productos.filter { it.tipo == "Protectores" },
-            onFavoriteClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(favorito = !producto.favorito)
-                }
-            },
-            onCarritoClick = { producto ->
-                val index = productosState.indexOf(producto)
-                if (index >= 0) {
-                    productosState[index] = producto.copy(carrito = !producto.carrito)
-                }
-            }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }
+
 
 
 @Composable
@@ -216,7 +129,11 @@ fun SearchBar(texto : String, onSearch: (String) -> Unit) {
             .background(Color.LightGray, RoundedCornerShape(24.dp))
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Icon(painter = painterResource(id = R.drawable.ic_buscar), contentDescription = "Buscar", tint = Color.Gray)
+        androidx.compose.material3.Icon(
+            painter = painterResource(id = R.drawable.ic_buscar),
+            contentDescription = "Buscar",
+            tint = Color.Gray
+        )
         Spacer(modifier = Modifier.width(8.dp))
         BasicTextField(
             value = textoBusqueda,
@@ -227,7 +144,11 @@ fun SearchBar(texto : String, onSearch: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             textStyle = TextStyle(fontSize = 16.sp, color = Color.Gray)
         )
-        Icon(painter = painterResource(id = R.drawable.ic_filtro), contentDescription = "Filtrar", tint = Color.Black)
+        androidx.compose.material3.Icon(
+            painter = painterResource(id = R.drawable.ic_filtro),
+            contentDescription = "Filtrar",
+            tint = Color.Black
+        )
     }
 }
 
@@ -267,10 +188,11 @@ fun CategoriesRow(
         CategoryItem(
             label = "Protectores",
             imageRes = R.drawable.protector,
-            isSelected = categoriaSeleccionada == "Protectores",
-            onClick = { onCategorySelected("Protectores") })
+            isSelected = categoriaSeleccionada == "Pantiprotectores diarios",
+            onClick = { onCategorySelected("Pantiprotectores diarios") })
     }
 }
+
 
 @Composable
 fun CategoryItem(label: String, imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
@@ -290,100 +212,82 @@ fun CategoryItem(label: String, imageRes: Int, isSelected: Boolean, onClick: () 
             modifier = Modifier.size(48.dp), // Ajustar el tamaño de la imagen
             contentScale = ContentScale.Crop // Ajustar la escala de la imagen
         )
-        Text(text = label, fontSize = 12.sp, color = Color(0xFFE91E63))
+        androidx.compose.material3.Text(text = label, fontSize = 12.sp, color = Color(0xFFE91E63))
     }
 }
 
-@Composable
-fun SectionTitle(title: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFE91E63), RoundedCornerShape(12.dp)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = title, fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(8.dp))
-    }
-}
+
 
 @Composable
-fun ProductRow(
-    productos: List<Producto>,
-    onFavoriteClick: (Producto) -> Unit,
-    onCarritoClick: (Producto) -> Unit) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        items(productos) { producto ->
-            ProductCard(
-                producto=producto,
-                onFavoriteClick = onFavoriteClick,
-                onCarritoClick = onCarritoClick
-            )
-        }
-    }
-}
-
-@Composable
-fun ProductCard(
+fun ProductoCard(
     producto: Producto,
-    onFavoriteClick: (Producto) -> Unit,
-    onCarritoClick: (Producto) -> Unit
+    esFavorito: Boolean,
+    estaEnCarrito: Boolean,
+    onFavoriteClick: () -> Unit,
+    onCarritoClick: () -> Unit,
+    navController: NavController
 ) {
     Card(
         modifier = Modifier
-            .width(160.dp)
+            .width(200.dp)
+            .height(250.dp)
             .padding(8.dp)
-            .height(250.dp),  // Establecer una altura fija para todas las tarjetas
+            .clickable {
+                // Navega a la pantalla de detalles pasando los parámetros del producto
+                navController.navigate("detalle_producto/${Uri.encode(producto.category)}/${Uri.encode(producto.img)}/${Uri.encode(producto.price)}/${Uri.encode(producto.description)}/${Uri.encode(producto.product)}")
+            },
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+        elevation = 4.dp
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Image(
-                painter = painterResource(id = producto.imagenResId),
-                contentDescription = producto.nombre,
-                modifier = Modifier
-                    .height(100.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
+            Text(
+                text = producto.category,
+                textAlign = TextAlign.Center,
+                fontSize = 13.sp
             )
-            Spacer(modifier = Modifier.height(15.dp))
-            Text(text = producto.nombre, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(text = producto.precio, fontSize = 14.sp, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = producto.product,
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Image(
+                painter = rememberAsyncImagePainter(model = producto.img),
+                contentDescription = "Imagen de ${producto.product}",
+                modifier = Modifier.height(140.dp).fillMaxWidth(),
+                contentScale = ContentScale.Fit
+            )
+
+            Text(
+                text = "Precio: \$${producto.price}",
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
+            )
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(2.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = {
-                    onFavoriteClick(producto)
-                }) {
+                IconButton(onClick = { onFavoriteClick() }){
                     Icon(
-                        painter = painterResource(
-                            id = if (producto.favorito) R.drawable.ic_favorito_lleno else R.drawable.ic_favorito_vacio
-                        ),
+                        painter = painterResource(id = if (esFavorito) R.drawable.ic_favorito_lleno else R.drawable.ic_favorito_vacio),
                         contentDescription = "Favorito",
-                        tint = if (producto.favorito) Color.Red else Color.Gray
+                        tint = if (esFavorito) Color.Red else Color.Gray
                     )
                 }
+
                 IconButton(onClick = {
-                    onCarritoClick(producto)
-                }) {
+                    onCarritoClick()})
+                {
                     Icon(
-                        painter = painterResource(
-                            id = if (producto.carrito) R.drawable.ic_carrito_lleno else R.drawable.ic_carrito_vacio
-                        ),
+                        painter = painterResource(id = if (estaEnCarrito) R.drawable.ic_carrito_lleno else R.drawable.ic_carrito_vacio),
                         contentDescription = "Carrito",
-                        tint = if (producto.carrito) Color.Magenta else Color.Gray
+                        tint = if (estaEnCarrito) Color.Magenta else Color.Gray
                     )
                 }
             }

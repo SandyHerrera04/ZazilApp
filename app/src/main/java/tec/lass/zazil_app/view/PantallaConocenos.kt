@@ -28,7 +28,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import tec.lass.zazil_app.R
-
+/**
+ * Composable que representa la pantalla de 'Conócenos'.
+ * Muestra información sobre la aplicación y la organización zazil
+ */
 
 
 @Composable

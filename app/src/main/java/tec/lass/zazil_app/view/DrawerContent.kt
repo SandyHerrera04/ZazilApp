@@ -1,6 +1,4 @@
 package tec.lass.zazil_app.view
-
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,6 +6,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 import tec.lass.zazil_app.R
+/**
+ * Composable que representa el contenido del menú lateral (drawer).
+ * Muestra las opciones disponibles para la navegación.
+ */
 @Composable
 fun DrawerContent(navController: NavController, onCloseDrawer: () -> Unit) {
     Column(modifier = Modifier.padding(6.dp)) {
@@ -30,11 +32,11 @@ fun DrawerContent(navController: NavController, onCloseDrawer: () -> Unit) {
             navController.navigate("hablemos")
             onCloseDrawer()
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        /*Spacer(modifier = Modifier.height(6.dp))
         MenuOption(iconResId = R.drawable.ic_carrito, label = "Carrito") {
             navController.navigate("carrito")
             onCloseDrawer()
-        }
+        }*/
         Spacer(modifier = Modifier.height(6.dp))
         MenuOption(iconResId = R.drawable.ic_favoritos, label = "Favoritos") {
             navController.navigate("favoritos")

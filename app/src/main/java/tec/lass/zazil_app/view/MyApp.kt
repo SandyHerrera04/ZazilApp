@@ -4,6 +4,7 @@ package tec.lass.zazil_app.view
 
 import PantallaTienda
 import android.os.Build
+import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,8 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -40,14 +45,15 @@ import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import mx.sphr.zazil.viewmodel.LoginViewModel
 import mx.sphr.zazil.viewmodel.SignUpViewModel
+import tec.lass.zazil_app.R
 import tec.lass.zazil_app.model.Producto
 import tec.lass.zazil_app.model.UserRepository
 import tec.lass.zazil_app.model.integrantes
-import tec.lass.zazil_app.model.productos
+import tec.lass.zazil_app.viewmodel.PagoViewModel
 import tec.lass.zazil_app.viewmodel.PasswordRecoveryViewModel
+import tec.lass.zazil_app.viewmodel.ProductoVM
 import tec.lass.zazil_app.viewmodel.SessionViewModel
 import tec.lass.zazil_app.viewmodel.UserProfileViewModel
-
 
 /**
  * Composable MyApp
@@ -56,19 +62,31 @@ import tec.lass.zazil_app.viewmodel.UserProfileViewModel
  * Dependiendo de la ruta de navegación actual, decide si mostrar la pantalla de inicio de sesión o el menú lateral.
  *
  * @param navController Controlador de navegación utilizado para manejar las rutas entre pantallas.
+ * @param sessionViewModel ViewModel que maneja el número de teléfono de la sesión.
+ * @param productosState Lista mutable que contiene los productos de la tienda.
+ * @param categoriasState Lista mutable que contiene las categorías de productos.
+ * @param carritoState Lista mutable que contiene los productos en el carrito.
+ * @param carritoVM ViewModel que maneja la lógica del carrito.
+ * @param productoVM ViewModel que maneja la lógica de los productos.
  */
-
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
+
 fun MyApp(navController: NavHostController, sessionViewModel: SessionViewModel) {
+    //val productosState = remember { mutableStateListOf<Producto>() }
+    val productoVM: ProductoVM = viewModel()  // Instancia del ViewModel
+
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val backStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = backStackEntry?.destination?.route
 
-    val productosState = remember { mutableStateListOf(*productos.toTypedArray()) }
+    //val productosState = remember { mutableStateListOf<Producto>()}
 
-    if (currentRoute == "login" || currentRoute == "signup") {
+
+    if (currentRoute == "login" || currentRoute == "signup" || currentRoute == "password_recovery") {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             content = { padding ->
@@ -77,7 +95,7 @@ fun MyApp(navController: NavHostController, sessionViewModel: SessionViewModel) 
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    NavigationComponent(navController = navController, productosState = productosState, sessionViewModel = sessionViewModel)
+                    NavigationComponent(navController = navController, productoVM = productoVM, sessionViewModel = sessionViewModel)
                 }
             }
         )
@@ -149,19 +167,32 @@ fun MyApp(navController: NavHostController, sessionViewModel: SessionViewModel) 
                                     )
                                 }
                             },
+                            actions = {
+                                // Aquí agregamos el botón del carrito
+                                IconButton(onClick = {
+                                    navController.navigate("carrito") // Navegar a la pantalla del carrito
+                                }) {
+                                    Icon(
+                                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_carrito),  // Cargar un vector como icono
+                                        contentDescription = "Carrito",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                                 containerColor = Color(0xFFFDD5507C),
                                 titleContentColor = Color.White
                             )
                         )
                     },
+
                     content = { padding ->
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(padding)
                         ) {
-                            NavigationComponent(navController = navController, productosState = productosState, sessionViewModel = sessionViewModel)
+                            NavigationComponent(navController = navController, productoVM = productoVM, sessionViewModel = sessionViewModel)
                         }
                     }
                 )
@@ -181,7 +212,11 @@ fun MyApp(navController: NavHostController, sessionViewModel: SessionViewModel) 
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NavigationComponent(navController: NavHostController, productosState: MutableList<Producto>, sessionViewModel: SessionViewModel) {
+fun NavigationComponent(
+    navController: NavHostController,
+    productoVM: ProductoVM,  // Ahora pasamos el ViewModel aquí
+    sessionViewModel: SessionViewModel) {
+
     NavHost(navController = navController, startDestination = "login") {
 
         composable("login") {
@@ -206,25 +241,46 @@ fun NavigationComponent(navController: NavHostController, productosState: Mutabl
         }
         composable("inicio") {
             // Pasamos el SessionViewModel a la pantalla de inicio para acceder al teléfono
-            PantallaInicio(navController = navController, SessionViewModel = SessionViewModel())
+            PantallaInicio(navController = navController, sessionViewModel = SessionViewModel())
         }
 
         composable("tienda") {
             PantallaTienda(
                 navController = navController,
-                productosState = productosState
+                productoVM = productoVM  // Pasa el ViewModel aquí
             )
         }
 
-        composable("productos/{categoriaSeleccionada}/{textoBusqueda}") { backStackEntry ->
-            val categoriaSeleccionada = backStackEntry.arguments?.getString("categoriaSeleccionada")
-            val textoBusqueda = backStackEntry.arguments?.getString("textoBusqueda") ?: ""
-            PantallaProductos(
-                categoriaSeleccionada = categoriaSeleccionada,
-                textoBusqueda = textoBusqueda,
-                navController = navController,
-                productosState = productosState
+        composable(
+            "detalle_producto/{product}/{img}/{price}/{description}/{category}",
+            arguments = listOf(
+                navArgument("product") { type = NavType.StringType },
+                navArgument("img") { type = NavType.StringType },
+                navArgument("price") { type = NavType.StringType },
+                navArgument("description") { type = NavType.StringType },
+                navArgument("category") { type = NavType.StringType }
             )
+        ) { backStackEntry ->
+            val product = backStackEntry.arguments?.getString("product") ?: ""
+            val img = backStackEntry.arguments?.getString("img") ?: ""
+            val price = backStackEntry.arguments?.getString("price") ?: ""
+            val description = backStackEntry.arguments?.getString("description") ?: ""
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+
+            // Crear un producto temporal con los datos recibidos
+            val producto = Producto(
+                product = product,
+                category = category,
+                img = img,
+                price = price,
+                description = description,
+                //discountPercent = "",
+                //stock = "",
+                //timeStamp = null,
+                //favorito = false,
+                //carrito = false,
+            )
+            PantallaProducto(navController, producto)
         }
 
         composable(route = "perfil/{phone}") { backStackEntry ->
@@ -253,9 +309,11 @@ fun NavigationComponent(navController: NavHostController, productosState: Mutabl
         }
 
         composable("favoritos") {
-            PantallaFavoritos(productosState.filter { it.favorito })
+            PantallaFavoritos(
+                navController = navController,  // Pasa el NavHostController
+                productoVM = productoVM  // Pasa el ViewModel
+            )
         }
-
         composable(
             "tema/{titulo}/{descripcion}/{imagen}/{infoCompleta}",
             arguments = listOf(
@@ -282,15 +340,41 @@ fun NavigationComponent(navController: NavHostController, productosState: Mutabl
             PantallaDonaciones()
         }
 
+       /* composable("pantallaPago") {
+            val pagoViewModel: PagoViewModel = viewModel()
+            PantallaPago(pagoViewModel = pagoViewModel)
+        }*/
+
+        /*composable(
+            route = "pantallaPago/{totalPrecio}",
+            arguments = listOf(navArgument("totalPrecio") { type = NavType.FloatType })
+        ) { backStackEntry ->
+
+            val totalPrecio = backStackEntry.arguments?.getFloat("totalPrecio") ?: 0.0f
+
+            // Obtener el contexto actual y convertirlo a ComponentActivity
+            val activity = LocalContext.current as ComponentActivity
+
+            // Obtener el mismo ViewModel que está en la actividad
+            val pagoViewModel: PagoViewModel = viewModel(activity)
+
+            PantallaPago(
+                pagoViewModel = pagoViewModel,
+                totalPrecio = totalPrecio,
+                activity = activity
+            )
+        }*/
+
+
+
+
+
+
         composable("carrito") {
             PantallaCarrito(
-                productosCarrito = productosState.filter { it.carrito },
-                onDeleteProducto = { productoEliminado ->
-                    val index = productosState.indexOf(productoEliminado)
-                    if (index != -1) {
-                        productosState[index] = productosState[index].copy(carrito = false)
-                    }
-                }
+                navController = navController,
+                productoVM = productoVM,
+                pagoViewModel = viewModel()  // Pasa el ViewModel aquí
             )
         }
     }

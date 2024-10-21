@@ -31,7 +31,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import tec.lass.zazil_app.R
-
+/**
+ * Pantalla de tema con información detallada.
+ * @param titulo Título del tema.
+ * @param descripcion Descripción del tema.
+ * @param imagen Recurso de imagen del tema.
+ * @param infoCompleta Información detallada del tema.
+ * @param navController Controlador de navegación.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaTema(titulo: String, descripcion: String, imagen: Int, infoCompleta: String, navController: NavController) {
@@ -41,6 +48,7 @@ fun PantallaTema(titulo: String, descripcion: String, imagen: Int, infoCompleta:
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally

@@ -20,7 +20,20 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-
+/**
+ * Composable que representa la pantalla del calendario.
+ * Permite visualizar los días del ciclo menstrual y eventos importantes.
+ * @param viewModel ViewModel asociado al calendario.
+ * @param fechaUltimaMenstruacionInput Campo de entrada para la fecha de última menstruación.
+ * @param duracionCicloInput Campo de entrada para la duración del ciclo menstrual.
+ * @param resultado Texto que muestra el resultado del cálculo.
+ * @param diasFertiles Texto que muestra los días fértiles.
+ * @param showChart Indica si se debe mostrar el gráfico del ciclo menstrual.
+ * @param proximaMenstruacion Fecha de la próxima menstruación calculada.
+ * @param diasFertilesInicio Fecha de inicio de los días fértiles calculados.
+ * @param diasFertilesFin Fecha de fin de los días fértiles calculados.
+ * @param formatter Formato de fecha utilizado para el procesamiento de fechas.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PantallaCalendario() {

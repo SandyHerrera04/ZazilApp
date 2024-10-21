@@ -1,5 +1,4 @@
 package tec.lass.zazil_app.view
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-
+/**
+ * Clase que representa una opción de menú en el drawer.
+ * Cada opción contiene un nombre y un ícono.
+ */
 @Composable
 fun MenuOption(iconResId: Int, label: String, onClick: () -> Unit) {
     Row(

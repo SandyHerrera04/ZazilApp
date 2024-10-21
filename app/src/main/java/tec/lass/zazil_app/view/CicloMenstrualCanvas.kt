@@ -1,6 +1,4 @@
 package tec.iama.myapplication.ciclo.view
-
-
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
@@ -29,6 +27,10 @@ import java.time.LocalDate
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * Composable que dibuja un canvas para representar el ciclo menstrual.
+ * Muestra diferentes fases del ciclo y sus respectivos días.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CicloMenstrualConIconos(

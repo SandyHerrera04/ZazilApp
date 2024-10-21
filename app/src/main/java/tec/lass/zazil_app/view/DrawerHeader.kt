@@ -1,5 +1,4 @@
 package tec.lass.zazil_app.view
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,7 +16,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import tec.lass.zazil_app.R
 import tec.lass.zazil_app.viewmodel.SessionViewModel
-
+/**
+ * Composable que representa el encabezado del menú lateral (drawer).
+ * Muestra información del usuario o un logo en la parte superior del menú.
+ */
 @Composable
 fun DrawerHeader( currentRoute: String?, onHeaderClick: () -> Unit, onCloseDrawer: () -> Unit, sessionViewModel: SessionViewModel, navController: NavController) {
     val phone by sessionViewModel.phoneNumber.observeAsState()

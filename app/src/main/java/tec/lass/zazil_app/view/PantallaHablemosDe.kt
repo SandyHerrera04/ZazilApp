@@ -39,14 +39,16 @@ import tec.lass.zazil_app.model.Integrante
 import tec.lass.zazil_app.model.Producto
 import tec.lass.zazil_app.model.Tema
 import tec.lass.zazil_app.model.integrantes
-import tec.lass.zazil_app.model.productos
 import tec.lass.zazil_app.model.temas
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.navigation.NavController
 import tec.lass.zazil_app.view.PantallaTema
-
+/**
+ * Composable que muestra la pantalla de Hablemos de.
+ * @param navController Controlador de navegación para navegar a otras pantallas.
+ */
 @Composable
 fun PantallaHablemosDe(navController: NavController) {
     Column(

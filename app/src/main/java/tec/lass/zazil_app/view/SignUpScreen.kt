@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -38,7 +39,11 @@ import kotlinx.coroutines.delay
 import mx.sphr.zazil.viewmodel.SignUpState
 import mx.sphr.zazil.viewmodel.SignUpViewModel
 import tec.lass.zazil_app.R
-
+/**
+ * Pantalla de registro de usuario.
+ * @param viewModel Modelo de vista para el registro.
+ * @param navController Controlador de navegación para navegar entre pantallas.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
@@ -61,6 +66,7 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
     var location by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var curp by remember { mutableStateOf("") }
+    var direction by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var showCurpHelp by remember { mutableStateOf(false) }
 
@@ -237,6 +243,18 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
         }
 
         item {
+            OutlinedTextField(
+                value = direction,
+                onValueChange = { direction = it },
+                label = { Text("Dirección de envío completa") },
+                leadingIcon = {
+                    Icon(Icons.Default.LocationOn, contentDescription = "Icono de direccion")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        item {
             // Campo CURP con icono y toque para mostrar ayuda
             OutlinedTextField(
                 value = curp,
@@ -291,7 +309,7 @@ fun SignUpScreen(viewModel: SignUpViewModel, navController: NavController) {
                             errorMessage = "El CURP ingresado no es válido."
                         } else {
                             viewModel.registerUser(
-                                email.trim(), password, phone, name, birthdate, curp, location
+                                email.trim(), password, phone, name, birthdate, curp, location, direction
                             )
                         }
                     } else {

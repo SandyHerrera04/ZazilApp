@@ -1,6 +1,4 @@
 package tec.lass.zazil_app.view
-
-
 import android.widget.Space
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +23,10 @@ import androidx.compose.material3.Icon
 
 
 import androidx.compose.material3.Icon
-
+/**
+ * Composable que representa la pantalla de aviso de privacidad.
+ * Muestra la información relacionada con las políticas de privacidad de la aplicación.
+ */
 @Composable
 fun PantallaAvisoPriv() {
     Column(

@@ -1,6 +1,5 @@
 
 package tec.lass.zazil_app.view
-
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,7 +29,10 @@ import mx.sphr.zazil.viewmodel.LoginState
 import mx.sphr.zazil.viewmodel.LoginViewModel
 import tec.lass.zazil_app.R
 import tec.lass.zazil_app.viewmodel.SessionViewModel
-
+/**
+ * Composable que representa la pantalla de inicio de sesión.
+ * Permite a los usuarios introducir sus credenciales para acceder a la aplicación.
+ */
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, sessionViewModel: SessionViewModel, navController: NavController) {
     var phone by remember { mutableStateOf("") }
@@ -51,7 +53,9 @@ fun LoginScreen(viewModel: LoginViewModel, sessionViewModel: SessionViewModel, n
         is LoginState.Success -> {
             sessionViewModel.setPhoneNumber(phone)
             Log.d("LoginScreen", "Navegando a inicio con el teléfono: $phone")
+            //navController.navigate("tienda")
             navController.navigate("inicio")
+
         }
         is LoginState.Loading -> {
             errorMessage = ""

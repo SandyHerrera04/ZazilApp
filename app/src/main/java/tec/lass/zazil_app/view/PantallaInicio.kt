@@ -9,23 +9,31 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+//import androidx.compose.runtime.changelist.Operation.AdvanceSlotsBy.name
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.auth.User
 import tec.lass.zazil_app.R
 import tec.lass.zazil_app.viewmodel.SessionViewModel
-
+/**
+ * Pantalla de inicio de la aplicación.
+ * @param navController Controlador de navegación.
+ * @param SessionViewModel Modelo de vista de la sesión.
+ */
 
 @Composable
-fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionViewModel) {
-    val phone by SessionViewModel.phoneNumber.observeAsState("")
+fun PantallaInicio(navController: NavHostController, sessionViewModel: SessionViewModel) {
+    //val phone by SessionViewModel.phoneNumber.observeAsState("")
+
 
     Column(
         modifier = Modifier
@@ -38,12 +46,13 @@ fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionVi
     ) {
         // Título de la pantalla
         Text(
-            text = "¡Nos alegra tenerte aquí!, $phone",
+            text = "¡Nos alegra tenerte aquí!",
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(14.dp))
+
         Text(
             text = "En ZAZIL celebramos la diversidad y nos comprometemos a apoyar a todas las personas en su bienestar menstrual.",
             fontSize = 13.sp,
@@ -52,7 +61,7 @@ fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionVi
 // SECCIÓN TIENDA
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "Explora productos sostenibles diseñados para acompañar tu bienestar en cada fase del ciclo, cuidando de ti y del planeta.",
+            text = "Explora productos sostenibles diseñados para cuidar de ti y del planeta.",
             fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         Spacer(modifier = Modifier.height(8.dp))
         // Botón para ir a la tienda
@@ -60,7 +69,7 @@ fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionVi
         { Text("Ir a la Tienda") }
         Spacer(modifier = Modifier.height(8.dp))
         // Carrusel de imágenes
-        Text(text = "Ventajas de nuestros productos:", fontSize = 13.sp, fontWeight = FontWeight.Light, textAlign = androidx.compose.ui.text.style.TextAlign.Left)
+        Text(text = "Algunos de nuestros productos:", fontSize = 13.sp, fontWeight = FontWeight.Light, textAlign = androidx.compose.ui.text.style.TextAlign.Left)
         Spacer(modifier = Modifier.height(8.dp))
         val imagenes = listOf(
             R.drawable.tienda1,
@@ -80,17 +89,11 @@ fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionVi
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Todos estos temas y más en nuestro apartado informativo",
-            fontSize = 13.sp,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Left
-        )
-        Spacer(modifier = Modifier.height(8.dp))
         // Botón para ir a la tienda
         Button(onClick = { navController.navigate("hablemos") })
         { Text("Visitar hablemos de...") }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Un poco del apartado:", fontSize = 13.sp, fontWeight = FontWeight.Light, textAlign = androidx.compose.ui.text.style.TextAlign.Start)
+        Text(text = "Todos estos temas y más en nuestro apartado informativo", fontSize = 13.sp, fontWeight = FontWeight.Light, textAlign = androidx.compose.ui.text.style.TextAlign.Start)
         Spacer(modifier = Modifier.height(8.dp))
         val imagenes2 = listOf(
             R.drawable.tienda1,
@@ -157,10 +160,6 @@ fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionVi
                     "Únete a nosotros en esta importante causa.",
             fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = "Tu ayuda puede marcar la diferencia." ,
-            fontSize = 13.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = {
             navController.navigate("donaciones")
@@ -168,7 +167,7 @@ fun PantallaInicio(navController: NavHostController, SessionViewModel: SessionVi
             Text("Dona aquí")
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "La situación:", fontSize = 13.sp, fontWeight = FontWeight.Light, textAlign = androidx.compose.ui.text.style.TextAlign.Start)
+        Text(text = "Tu ayuda puede marcar la diferencia.", fontSize = 13.sp, fontWeight = FontWeight.Light, textAlign = androidx.compose.ui.text.style.TextAlign.Start)
         Spacer(modifier = Modifier.height(8.dp))
         val imagenes5 = listOf(
             R.drawable.tienda1,

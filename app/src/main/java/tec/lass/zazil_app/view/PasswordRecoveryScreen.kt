@@ -26,7 +26,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import tec.lass.zazil_app.viewmodel.PasswordRecoveryViewModel
-
+/**
+ * Pantalla de recuperación de contraseña.
+ * @param navController Controlador de navegación.
+ * @param viewModel Modelo de vista para la recuperación de contraseña.
+ */
 @Composable
 fun PasswordRecoveryScreen(
     navController: NavController, // Para la navegación si quieres regresar al login después
