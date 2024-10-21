@@ -39,7 +39,9 @@ class SignUpViewModel(private val userRepository: UserRepository) : ViewModel() 
         name: String,
         birthdate: String,
         curp: String,
-        location: String
+        location: String,
+        direction: String
+
     ) {
         _signUpState.value = SignUpState.Loading
 
@@ -51,6 +53,7 @@ class SignUpViewModel(private val userRepository: UserRepository) : ViewModel() 
             birthdate = birthdate,
             location = location,
             curp = curp,
+            direction = direction,
             onSuccess = {
                 _signUpState.value = SignUpState.Success
             },

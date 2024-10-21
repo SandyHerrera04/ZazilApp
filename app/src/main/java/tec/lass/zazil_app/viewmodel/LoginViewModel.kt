@@ -7,7 +7,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import tec.lass.zazil_app.model.UserRepository
 import tec.lass.zazil_app.viewmodel.SessionViewModel
-
+/**
+ * Clase LoginViewModel
+ * @property userRepository Repositorio de usuarios.
+ * @property _loginState Estado de la autenticación.
+ * @property loginState Estado de la autenticación como StateFlow.
+ * @property phoneNumber Número de teléfono del usuario.
+ * @property login Función para iniciar sesión.
+ * @property setUserName Función para establecer el nombre del usuario en el SessionViewModel.
+ * @property sessionViewModel Modelo de vista de sesión.
+ */
 sealed class LoginState {
     object Success : LoginState()
     object Loading : LoginState()
