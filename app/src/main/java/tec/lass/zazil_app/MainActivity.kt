@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import tec.lass.zazil_app.ui.theme.ZAZIL_APPTheme
 import tec.lass.zazil_app.view.MyApp
+import tec.lass.zazil_app.viewmodel.SessionViewModel
 import tec.lass.zazil_app.viewmodel.UserProfileViewModel
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ZAZIL_APPTheme {
                 val navController = rememberNavController()
-                MyApp(navController = navController)
+                MyApp(navController = navController, sessionViewModel = SessionViewModel())
             }
         }
     }
