@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
 
 
@@ -16,6 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZAZIL_APP"
         tools:targetApi="31">
+
+        <activity android:name=".view.PaymentActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
