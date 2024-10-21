@@ -4,13 +4,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import org.mindrot.jbcrypt.BCrypt
 
-/**
- * Clase UserRepository
- *
- * Este repositorio maneja la lógica para registrar y autenticar usuarios en la base de datos de Firebase.
- * Utiliza Firebase Realtime Database para almacenar y recuperar información del usuario.
- */
-
 class UserRepository {
     private val database = FirebaseDatabase.getInstance().reference.child("users")
 
@@ -66,6 +59,7 @@ class UserRepository {
         birthdate: String,
         location: String,
         curp: String,
+        direction: String,
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
@@ -86,7 +80,8 @@ class UserRepository {
                     "email" to email,
                     "birthdate" to birthdate,
                     "location" to location,
-                    "curp" to hashedCurp // CURP encriptado
+                    "curp" to hashedCurp, // CURP encriptado
+                    "direction" to direction
                 )
 
                 // Crea el usuario en Firebase Authentication

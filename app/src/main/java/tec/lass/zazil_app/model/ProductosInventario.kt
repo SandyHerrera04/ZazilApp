@@ -3,7 +3,7 @@ package tec.lass.zazil_app.model
 import tec.lass.zazil_app.R
 
 // Lista de productos estática
-val productos = listOf(
+/*val productos = listOf(
     Producto("Toallas Alisa Nocturna", "$180", R.drawable.ic_launcher_foreground, "Nocturnas", esNovedad = false, tieneDescuento = true, "Toallas Alisa Nocturna", false, false),
     Producto("Toalla Ambar Teens", "$200", R.drawable.ic_launcher_foreground, "Teens", esNovedad = false, tieneDescuento = false, "Toallas Alisa Nocturna", false, false),
     Producto("Toalla Alisa Regular", "$150", R.drawable.ic_launcher_foreground, "Regulares", esNovedad = true, tieneDescuento = false, "Toallas Alisa Nocturna", false, false),
@@ -27,4 +27,4 @@ val productos = listOf(
 
 
     // Agrega más productos aquí
-)
+)*/
